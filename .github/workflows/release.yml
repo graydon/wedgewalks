@@ -1,0 +1,74 @@
+name: release
+
+# Push a tag like v0.1.0 to build binaries for each platform and attach them to a GitHub release.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-22.04, target: x86_64-unknown-linux-gnu, name: linux-x86_64 }
+          - { os: macos-14, target: aarch64-apple-darwin, name: macos-arm64 }
+          - { os: macos-14, target: x86_64-apple-darwin, name: macos-x86_64 }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc, name: windows-x86_64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust target
+        run: rustup target add ${{ matrix.target }}
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev libxi-dev libxrandr-dev libgl1-mesa-dev
+      - uses: Swatinem/rust-cache@v2
+        with: { key: "${{ matrix.target }}" }
+      - name: Build
+        run: cargo build --release --locked --target ${{ matrix.target }}
+      - name: Install cargo-bundle
+        if: runner.os == 'macOS'
+        run: cargo install cargo-bundle --locked
+      - name: Package
+        shell: bash
+        run: |
+          dir=wedgewalks-${{ github.ref_name }}-${{ matrix.name }}
+          mkdir "$dir"
+          if [ "${{ runner.os }}" = macOS ]; then
+            # An app: double-click to open. It keeps its files in ~/Library/Application Support/wedgewalks.
+            cargo bundle --release --target ${{ matrix.target }}
+            cp -r "target/${{ matrix.target }}/release/bundle/osx/Wedgewalks.app" "$dir/"
+            cp "target/${{ matrix.target }}/release/wedgewalks" "$dir/"
+            cp LICENSE README.md "$dir/"
+          else
+            exe=wedgewalks; [ "${{ runner.os }}" = Windows ] && exe=wedgewalks.exe
+            cp "target/${{ matrix.target }}/release/$exe" LICENSE README.md "$dir/"
+          fi
+          cp -r doc "$dir/"
+          if [ "${{ runner.os }}" = Windows ]; then 7z a "$dir.zip" "$dir"; else tar czf "$dir.tar.gz" "$dir"; fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: |
+            wedgewalks-*.tar.gz
+            wedgewalks-*.zip
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: dist, merge-multiple: true }
+      - name: Checksums
+        run: cd dist && find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%P\n' | sort | xargs sha256sum > SHA256SUMS
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

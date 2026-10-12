@@ -1,0 +1,61 @@
+# WEDGEWALKS parameters. Omitted keys use built-in defaults. See ALGORITHM.md.
+
+travel = "foot"            # or "bike": cycle ways and bicycle routes preferred, no steps, further each day
+access = "transit"         # or "direct": every day goes from the base out to the ring, along an arc, and home
+
+# Limits a plan is checked against.
+max_road_gap_m = 500.0
+max_road_fraction = 0.15
+max_double_back_km = 0.6
+max_climb_per_day_m = 300.0
+
+# Transit.
+access_walk_m = 1000.0      # stop <-> arc endpoint, and base <-> stop
+transfer_walk_m = 200.0     # walk between stops when changing routes
+transfer_penalty_m = 500.0  # the first change counts as this much extra walking, the second twice that, ...
+ride_cost = 0.1             # a metre ridden counts as this much walking (avoids long detours)
+wait_cost_m_per_min = 40.0  # a minute of expected wait counts as this much walking (favours frequent lines)
+bus_penalty_m = 0.0         # extra cost per bus leg, to prefer rail (e.g. 500)
+max_changes = 1             # most changes of route per trip (0 = direct only); the nth costs n x transfer_penalty_m
+
+# Way preferences.
+road_avoidance = 10.0
+prefer_away_from_traffic = true # paths beside busy roads cost 1.5x
+prefer_waterside = true         # ways beside water cost less (x0.75)
+waterside_m = 30.0              # within this distance of water counts as waterside
+route_bonus = 0.8               # multiplier for edges on hiking/foot/bicycle route relations
+beside_traffic_m = 15.0         # path this close to a busy road counts as beside traffic
+climb_cost_m = 8.0              # a metre climbed counts as this much walking (Naismith: ~8; 0 ignores hills)
+bike_climb_cost_m = 25.0        # the same by bicycle
+cycle_bonus = 0.55              # by bicycle, a cycleway, cycle lane or cycle track costs this share
+bike_route_bonus = 0.8          # by bicycle, a way on a signed bicycle route costs this share
+turn_cost_m = 90.0              # a sharp turn counts as this much walking (a street switch 1.5x); keeps routes straight
+life_weight = 0.3               # most a lively street (shops, cafes, venues) is discounted, as a share of its cost
+shade_weight = 0.15             # most a fully shaded way is discounted
+trailhead_weight_m = 500.0      # ending a day away from a station, neighbourhood, path end, park... counts this much extra
+shade_near_m = 15.0             # shaded if this close to trees / park or wood edges
+allow_steps = true              # false drops highway=steps from the graph
+
+# Planning.
+centroid_offset_km = 3.0    # how far from the base the centre of the ring may be (it still goes round the base)
+extract_radius_km = 25.0    # map loaded round the base; plans use three quarters of it
+top_n = 5                   # plans reported per city
+
+# The trip: days of walking round the base, and how far each day.
+[trip]
+days = 7.0
+day_km = 8.0
+
+# Each combination of travel and access has its own trip (travelling from the
+# base, the day includes the way out and home).
+[direct_trip]
+days = 4.0
+day_km = 8.0
+
+[bike_trip]
+days = 4.0
+day_km = 30.0
+
+[bike_direct_trip]
+days = 3.0
+day_km = 40.0

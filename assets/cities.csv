@@ -1,0 +1,13 @@
+# Candidate cities. lat/lon is the base (where you sleep); the columns after the
+# coordinates are optional notes.
+# source: bbbike:<Name> or geofabrik:<region-id> <url> (blank = data/<city>.osm.pbf).
+name,country,lat,lon,population,climate_note,summer_high_c,passport_ok,safety_ok,notes,source
+Vancouver,CA,49.2827,-123.1207,,,,,,,bbbike:Vancouver
+Toronto,CA,43.6532,-79.3832,,,,,,,bbbike:Toronto
+London,GB,51.5074,-0.1278,,,,,,Charing Cross,bbbike:London
+Paris,FR,48.8566,2.3522,,,,,,Hotel de Ville,bbbike:Paris
+Edinburgh,GB,55.9533456,-3.1883749,,,,,,,bbbike:Edinburgh
+Dublin,IE,53.3493795,-6.2605593,,,,,,,bbbike:Dublin
+Berlin,DE,52.5173885,13.3951309,,,,,,,bbbike:Berlin
+Stockholm,SE,59.3251172,18.0710935,,,,,,,bbbike:Stockholm
+Tokyo,JP,35.6768601,139.7638947,,,,,,,bbbike:Tokyo
